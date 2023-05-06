@@ -22,37 +22,27 @@ def main(page: ft.Page):
     selected_id = 0
 
     def minus_click(e):
-        
-        selected_id = selected_id - 1
-        txt_number.value = str(selected_id - 1)
-        update_nav_buttons(selected_id)
+        txt_number.value = str(int(txt_number.value) - 1)
         page.update()
 
     def plus_click(e):
-        
-        selected_id = selected_id + 1
-        txt_number.value = str(selected_id)
-        update_nav_buttons(selected_id)
+        txt_number.value = str(int(txt_number.value) + 1)
         page.update()
 
-    def update_nav_buttons(id=selected_id):
-        if(id + 1>=len(lv.controls)):
-            button_next.disabled=True
-        if(id - 1<=0):
-            button_before.disabled=True
-    
-    def update_current(i=0):
-        txt_date.value = str(i)
+       
+    def update_current(e):
+        txt_date.value = str(e)
         page.update()
 
     button_before = ft.IconButton(ft.icons.NAVIGATE_BEFORE_ROUNDED, on_click=minus_click)
     button_next = ft.IconButton(ft.icons.NAVIGATE_NEXT_ROUNDED, on_click=plus_click)
     
+    
     lv = ft.ListView(width=x_w/2, height=x_h/2, spacing=10)
     for i in range(2000):
-        lv.controls.append(ft.TextButton(text=f"Line {i}", on_click=update_current(i)))
+        lv.controls.append(ft.Radio(label=f"Line {i}", value=i))
 
-
+    radiogroup_list = ft.RadioGroup(content=lv, on_change=update_current)
 
     page.add(
         ft.TextField(value="Przeglądarka logów SSH", text_align=ft.TextAlign.CENTER, width=x_w, read_only=True, height=50),
@@ -66,7 +56,7 @@ def main(page: ft.Page):
         ),
         ft.Row(
         [
-            lv,
+            radiogroup_list,
             ft.Column(
                 [
                     txt_date, 
