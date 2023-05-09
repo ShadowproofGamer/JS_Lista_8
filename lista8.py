@@ -170,7 +170,10 @@ def main(page: ft.Page):
                         txt_ip,
                         txt_description,
                         
-                    ], height=x_h/2, width=x_w/2
+                    ], 
+                    height=x_h/2, 
+                    width=x_w/2,
+                    scroll=ft.ScrollMode.AUTO
                 )
             ],
             expand=True,
