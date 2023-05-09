@@ -153,8 +153,11 @@ def get_log_file(path:str):
         print(f"failed {path}")
         raise Exception
     
+
+
 #tuple = (sshtime, pid, user, ip, port, description)
 def filter_data(time_start, time_end):
+    print(time_start, time_end)
     try:
         if time_start!= "": 
             start = SSHTime(time_start)
@@ -166,6 +169,8 @@ def filter_data(time_start, time_end):
             end=None
     except:
         raise Exception
+    
+
     result = []
     if not start and not end:
         #zmienić do w funkcji:
@@ -192,6 +197,9 @@ def filter_data(time_start, time_end):
         #zmienić do w funkcji:
         entries_to_output(result)
     
+
+
+
 def entries_to_output(current_list:list[SSHLogEntry]):
     #print(var.ssh_list[0:10:])
     #print(current_list[0:10:])

@@ -58,18 +58,26 @@ def main(page: ft.Page):
     def search(e):
         #try:
         core.initializer(str(txt_address.value))
-        n=0
-        for i in var.info_list:
-            lv.controls.append(ft.Radio(label=str(i[0][0:70:]), value=n))
-            n+=1
+        generate_master()
         refresh_detail()
         #except:txt_address.value = f"failed to find {txt_address.value}!"
         refresh_button()
         page.update()
 
+    def generate_master():
+        lv.controls.clear()
+        n=0
+        for i in var.info_list:
+            lv.controls.append(ft.Radio(label=str(i[0][0:70:]), value=n))
+            n+=1
     #TODO
     def output_filter(e):
-        pass
+
+        core.filter_data(txt_start.value, txt_end.value)
+        generate_master()
+        refresh_detail()
+        refresh_button()
+        page.update()
 
     def refresh_button():
         #print(f"len: {len(lv.controls)}, id: {var.current_id}, next_dis: {button_next.disabled}, before_dis: {button_before.disabled}")
@@ -83,12 +91,13 @@ def main(page: ft.Page):
             button_before.disabled=False
 
     def refresh_detail():
-        txt_current_line.value=var.info_list[var.current_id][0]
-        txt_date.value=var.info_list[var.current_id][1]
-        txt_pid.value=var.info_list[var.current_id][2]
-        txt_user.value=var.info_list[var.current_id][3]
-        txt_description.value=var.info_list[var.current_id][4]
-        txt_ip.value=var.info_list[var.current_id][5]
+        if(len(var.info_list)>0):
+            txt_current_line.value=var.info_list[var.current_id][0]
+            txt_date.value=var.info_list[var.current_id][1]
+            txt_pid.value=var.info_list[var.current_id][2]
+            txt_user.value=var.info_list[var.current_id][3]
+            txt_description.value=var.info_list[var.current_id][4]
+            txt_ip.value=var.info_list[var.current_id][5]
 
 
     #przyciski uruchamiające procesy zmieniające stronę
