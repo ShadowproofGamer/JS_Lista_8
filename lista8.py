@@ -56,11 +56,13 @@ def main(page: ft.Page):
         page.update()
 
     def search(e):
-        #try:
-        core.initializer(str(txt_address.value))
+        try:
+            core.initializer(str(txt_address.value))
+            txt_address.error_text=None
+        except:txt_address.error_text = f"failed to find {txt_address.value}!"
         generate_master()
         refresh_detail()
-        #except:txt_address.value = f"failed to find {txt_address.value}!"
+        
         refresh_button()
         page.update()
 
@@ -70,10 +72,19 @@ def main(page: ft.Page):
         for i in var.info_list:
             lv.controls.append(ft.Radio(label=str(i[0][0:70:]), value=n))
             n+=1
-    #TODO
+    
     def output_filter(e):
-
-        core.filter_data(txt_start.value, txt_end.value)
+        #txt_start.error_text=None
+        #txt_end.error_text=None
+        msg = core.filter_data(txt_start.value, txt_end.value)
+        if(msg[0]):
+            txt_start.error_text = f"wrong input or other error!"
+        else:
+            txt_start.error_text = None
+        if(msg[1]):
+            txt_end.error_text = f"wrong input or other error!"
+        else:
+            txt_end.error_text = None
         generate_master()
         refresh_detail()
         refresh_button()

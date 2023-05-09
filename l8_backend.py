@@ -12,8 +12,8 @@ class IPv4Address:
 
 class SSHTime:
     #Jan  7 16:55:14
-    _months = ["Jan", "Feb", "Mar","Apr","May","Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]
-    def __init__(self, _value:str) -> None:
+    def __init__old(self, _value:str) -> None:
+        self._months = ["Jan", "Feb", "Mar","Apr","May","Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]
         self.month = re.search(r'^\w{3}', _value).group(0)
         self.day = re.search(r'(?<=^\w{3} {1})[0-9]+|(?<=^\w{3} {2})[0-9]+', _value).group(0)
         self.hour = re.search(r'(?<=^\w{3} {1}\w{2} )\w{2}|(?<=^\w{3} {2}\w )\w{2}', _value).group(0)
@@ -21,6 +21,20 @@ class SSHTime:
         self.second = re.search(r'(?<=^\w{3} {1}\w{2} \w{2}:\w{2}:)\w{2}|(?<=^\w{3} {2}\w \w{2}:\w{2}:)\w{2}', _value).group(0)
         #print(f"mon: {self.month}, day: {self.day}, hour: {self.hour}, minute: {self.minute}, second: {self.second}")
     
+    def __init__(self, _value:str) -> None:
+        self._months = ["Jan", "Feb", "Mar","Apr","May","Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]
+        dat=_value.split()
+        if self._months.__contains__(dat[0]): self.month = dat[0]
+        else: raise Exception
+        if int(dat[1])>0 and int(dat[1])<32: self.day = dat[1]
+        else: raise Exception
+        if int(re.search(r'^\w{2}(?=:)', dat[2]).group(0))<60: self.hour = re.search(r'^\w{2}(?=:)', dat[2]).group(0)
+        else: raise Exception
+        if int(re.search(r'(?<=^\w{2}:)\w+(?=:)', dat[2]).group(0))<60: self.minute = re.search(r'(?<=^\w{2}:)\w+(?=:)', dat[2]).group(0)
+        else: raise Exception
+        if int(re.search(r'(?<=^\w{2}:\w{2}:)\w+', dat[2]).group(0))<60: self.second = re.search(r'(?<=^\w{2}:\w{2}:)\w+', dat[2]).group(0)
+        else: raise Exception
+
     def __str__(self) -> str:
         if(int(self.day)>=10):
             return "{} {} {}:{}:{}".format(self.month, self.day, self.hour, self.minute, self.second)
@@ -157,24 +171,33 @@ def get_log_file(path:str):
 
 #tuple = (sshtime, pid, user, ip, port, description)
 def filter_data(time_start, time_end):
-    print(time_start, time_end)
+    #print(time_start, time_end)
+    err_msg = [False,False]
     try:
         if time_start!= "": 
             start = SSHTime(time_start)
         else:
             start=None
+    except:
+        print("error filtering start date!")
+        start=None
+        err_msg[0]=True
+    try:
         if time_end!= "": 
             end = SSHTime(time_end)
         else:
             end=None
     except:
-        raise Exception
+        print("error filtering end date!")
+        end=None
+        err_msg[1]=True
     
 
     result = []
     if not start and not end:
         #zmienić do w funkcji:
         entries_to_output(var.ssh_list)
+        return err_msg
     
     elif not start:
         for log in var.ssh_list:
@@ -182,6 +205,7 @@ def filter_data(time_start, time_end):
                 result.append(log)
         #zmienić do w funkcji:
         entries_to_output(result)
+        return err_msg
     
     elif not end:
         for log in var.ssh_list:
@@ -189,6 +213,7 @@ def filter_data(time_start, time_end):
                 result.append(log)
         #zmienić do w funkcji:
         entries_to_output(result)
+        return err_msg
     
     else: 
         for log in var.ssh_list:
@@ -196,6 +221,7 @@ def filter_data(time_start, time_end):
                 result.append(log)
         #zmienić do w funkcji:
         entries_to_output(result)
+        return err_msg
     
 
 
