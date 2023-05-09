@@ -77,16 +77,22 @@ class SSHLogEntry():
         self.host_name=re.search(r'(?<=:[0-9]{2} )\w*', raw).group(0)
         self._raw=raw
         self.pid=int(re.search(r'(?<=sshd\[)[0-9]*', raw).group(0))
-        tmp_usr = re.search(r'(?<=user )\w+', raw)
+        tmp_usr = re.search(r'(?<=user )\w+|(?<=Failed password for )\w+|(?<=Accepted password for )\w+', raw)
         self.description = re.search(r'(?<=]: ).*$', raw).group(0)
-        if tmp_usr:
-            self.user = tmp_usr.group(0)
-        else:
+        try:
+            if tmp_usr:
+                self.user = tmp_usr.group(0)
+            else:
+                self.user = ""
+        except:
             self.user = ""
         tmp_port = re.search(r'(?<=port )\w*', raw)
-        if tmp_port:
-            self.port = int(tmp_port.group(0))
-        else:
+        try:
+            if tmp_port:
+                self.port = int(tmp_port.group(0))
+            else:
+                self.port=""
+        except:
             self.port=""
     
     
@@ -201,16 +207,17 @@ def entries_to_output(current_list:list[SSHLogEntry]):
         if(e.has_ip()):
             tmp_ip=e.get_ipv4()
         #print(tmp_ip)
-        result = (e._raw, e.time, e.pid, e.user, e.description, tmp_ip)
-        print(e.user)
-        for n in result:
+        result = [e._raw, e.time, e.pid, e.user, e.description, tmp_ip]
+
+        for n in range(len(result)):
             #print(f"krotka element: {str(n)}")
             try:
-                if str(n).__eq__(""):
+                if result[n]=="" or result[n]==None:
                     #print("no i jest!")
-                    n="-"
+                    result[n]="-"
             except:
-                print(f"no i wszystko jasne, tu wywala błąd: {n}")
+                #print(f"no i wszystko jasne, tu wywala błąd: {result[n]}")
+                result[n]="-"
             
             #print("no wszystko niby działa")
         var.info_list.append(result)
