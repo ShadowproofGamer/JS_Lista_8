@@ -15,16 +15,23 @@ class SSHTime:
     _months = ["Jan", "Feb", "Mar","Apr","May","Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"]
     def __init__(self, _value:str) -> None:
         self.month = re.search(r'^\w{3}', _value).group(0)
-        self.day = re.search(r'(?<=^\w{3} {1})\w*|(?<=^\w{3} {2})\w*', _value).group(0)
+        self.day = re.search(r'(?<=^\w{3} {1})[0-9]+|(?<=^\w{3} {2})[0-9]+', _value).group(0)
         self.hour = re.search(r'(?<=^\w{3} {1}\w{2} )\w{2}|(?<=^\w{3} {2}\w )\w{2}', _value).group(0)
         self.minute = re.search(r'(?<=^\w{3} {1}\w{2} \w{2}:)\w{2}|(?<=^\w{3} {2}\w \w{2}:)\w{2}', _value).group(0)
         self.second = re.search(r'(?<=^\w{3} {1}\w{2} \w{2}:\w{2}:)\w{2}|(?<=^\w{3} {2}\w \w{2}:\w{2}:)\w{2}', _value).group(0)
+        #print(f"mon: {self.month}, day: {self.day}, hour: {self.hour}, minute: {self.minute}, second: {self.second}")
     
     def __str__(self) -> str:
-        return "{} {} {}:{}:{}".format(self.month, self.day, self.hour, self.minute, self.second)
+        if(int(self.day)>=10):
+            return "{} {} {}:{}:{}".format(self.month, self.day, self.hour, self.minute, self.second)
+        else:
+            return "{}  {} {}:{}:{}".format(self.month, self.day, self.hour, self.minute, self.second)
     
     def __eq__(self, other: object) -> bool:
-        return (self.month==other.month and self.day==other.day and self.hour==other.hour and self.minute==other.minute and self.second==other.second)
+        try:
+            return (self.month==other.month and self.day==other.day and self.hour==other.hour and self.minute==other.minute and self.second==other.second)
+        except:
+            return False
     
     def __gt__(self, other: object) -> bool:
         try: 
@@ -71,6 +78,7 @@ class SSHLogEntry():
         self._raw=raw
         self.pid=int(re.search(r'(?<=sshd\[)[0-9]*', raw).group(0))
         tmp_usr = re.search(r'(?<=user )\w+', raw)
+        self.description = re.search(r'(?<=]: ).*$', raw).group(0)
         if tmp_usr:
             self.user = tmp_usr.group(0)
         else:
@@ -78,6 +86,8 @@ class SSHLogEntry():
         tmp_port = re.search(r'(?<=port )\w*', raw)
         if tmp_port:
             self.port = int(tmp_port.group(0))
+        else:
+            self.port=""
     
     
     def __str__(self):
@@ -121,6 +131,7 @@ class SSHLogEntry():
 
 def initializer(path:str):
     var.ssh_list = [SSHLogEntry(l) for l in get_log_file(path)]
+    entries_to_output(var.ssh_list)
 
 
 
@@ -137,7 +148,7 @@ def get_log_file(path:str):
         raise Exception
     
 #tuple = (sshtime, pid, user, ip, port, description)
-def get_data(time_start, time_end) -> list:
+def filter_data(time_start, time_end):
     try:
         if time_start!= "": 
             start = SSHTime(time_start)
@@ -150,22 +161,57 @@ def get_data(time_start, time_end) -> list:
     except:
         raise Exception
     result = []
-    if not start:
+    if not start and not end:
+        #zmienić do w funkcji:
+        entries_to_output(var.ssh_list)
+    
+    elif not start:
         for log in var.ssh_list:
             if(log.time<=end):
                 result.append(log)
-        return result
+        #zmienić do w funkcji:
+        entries_to_output(result)
+    
     elif not end:
         for log in var.ssh_list:
             if(log.time>=start):
                 result.append(log)
-        return result
-    
-    elif not start and not end:
-        return var.ssh_list
+        #zmienić do w funkcji:
+        entries_to_output(result)
     
     else: 
         for log in var.ssh_list:
             if(log.time>=start and log.time<=end):
                 result.append(log)
-        return result
+        #zmienić do w funkcji:
+        entries_to_output(result)
+    
+def entries_to_output(current_list:list[SSHLogEntry]):
+    #print(var.ssh_list[0:10:])
+    #print(current_list[0:10:])
+    var.info_list.clear()
+    var.current_id=0
+    for e in current_list:
+        #print(e)
+        #txt_date.value=var.info_list[var.current_id][1]
+        #txt_pid.value=var.info_list[var.current_id][2]
+        #txt_user.value=var.info_list[var.current_id][3]
+        #txt_description.value=var.info_list[var.current_id][4]
+        tmp_ip=""
+        if(e.has_ip()):
+            tmp_ip=e.get_ipv4()
+        #print(tmp_ip)
+        result = (e._raw, e.time, e.pid, e.user, e.description, tmp_ip)
+        print(e.user)
+        for n in result:
+            #print(f"krotka element: {str(n)}")
+            try:
+                if str(n).__eq__(""):
+                    #print("no i jest!")
+                    n="-"
+            except:
+                print(f"no i wszystko jasne, tu wywala błąd: {n}")
+            
+            #print("no wszystko niby działa")
+        var.info_list.append(result)
+    #print(var.info_list[0:10:])
